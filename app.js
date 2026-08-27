@@ -14,11 +14,18 @@
   const mediaGrid = document.getElementById("media-grid");
   const badges = document.querySelectorAll(".badge");
 
-  // Public CORS proxies used as a best-effort fallback chain for
-  // Instagram/Threads (their CDNs / pages don't allow direct cross-origin
-  // fetches from arbitrary sites). Twitter's syndication API is CORS-open
-  // and never needs a proxy.
+  // Deploy worker/proxy-worker.js (see worker/README.md) and paste its
+  // *.workers.dev URL here for reliable Instagram/Threads fetching. Leave
+  // empty ("") to skip straight to the public proxy fallback chain below.
+  const WORKER_PROXY_URL = "";
+
+  // Fallback chain for Instagram/Threads (their CDNs / pages don't allow
+  // direct cross-origin fetches from arbitrary sites). These public proxies
+  // are best-effort and can be rate-limited or blocked at any time — the
+  // worker above is the reliable option. Twitter's syndication API is
+  // CORS-open and never needs any of this.
   const CORS_PROXIES = [
+    ...(WORKER_PROXY_URL ? [(u) => `${WORKER_PROXY_URL}?url=${encodeURIComponent(u)}`] : []),
     (u) => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
     (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
     (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
