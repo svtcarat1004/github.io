@@ -1,15 +1,16 @@
 /**
- * Cloudflare Worker: restricted fetch proxy for Instagram / Threads.
+ * Cloudflare Worker: restricted fetch proxy for Instagram / Threads / X.
  *
  * The public page (index.html/app.js) needs the raw HTML of an Instagram or
- * Threads post to pull the original-quality media URL out of the embedded
- * JSON. Browsers can't fetch those pages directly (no CORS headers from
- * Meta), so this worker fetches them server-side and hands the HTML back
- * with permissive CORS headers.
+ * Threads post (or the JSON from Twitter's syndication API) to pull the
+ * original-quality media URL out. None of these send CORS headers that
+ * allow an arbitrary site to read them directly, so this worker fetches
+ * them server-side and hands the response back with permissive CORS
+ * headers.
  *
  * It intentionally is NOT a general-purpose open proxy:
  *  - only GET is allowed
- *  - only exact-match Instagram/Threads hostnames may be targeted
+ *  - only exact-match hostnames in ALLOWED_TARGET_HOSTS may be targeted
  *  - only requests whose Origin/Referer match ALLOWED_ORIGINS are served
  *
  * Deploy with Wrangler (see worker/README.md), then paste the resulting
@@ -23,6 +24,7 @@ const ALLOWED_TARGET_HOSTS = new Set([
   "www.threads.net",
   "threads.com",
   "www.threads.com",
+  "cdn.syndication.twimg.com",
 ]);
 
 // Add your GitHub Pages origin(s) here. Leave the array empty to allow any

@@ -108,13 +108,19 @@
   async function resolveTwitter(url) {
     const id = extractTweetId(url);
     const token = tweetToken(id);
-    const res = await fetch(
+    // cdn.syndication.twimg.com only sends
+    // Access-Control-Allow-Origin: https://platform.twitter.com, so a direct
+    // browser fetch from any other origin is blocked by CORS. Route through
+    // the same proxy chain used for Instagram/Threads.
+    const text = await fetchViaProxy(
       `https://cdn.syndication.twimg.com/tweet-result?id=${id}&token=${token}`
     );
-    if (!res.ok) {
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
       throw new Error("트윗 정보를 가져오지 못했습니다. 비공개 계정이거나 삭제된 게시물일 수 있어요.");
     }
-    const data = await res.json();
     if (data.__typename === "TweetTombstone") {
       throw new Error("이 트윗은 비공개이거나 삭제되어 가져올 수 없습니다.");
     }
