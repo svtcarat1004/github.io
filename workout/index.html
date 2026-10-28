@@ -133,7 +133,7 @@
   }
   .cell {
     position: relative;
-    aspect-ratio: 1 / 1.08;
+    aspect-ratio: 1 / 1.22;
     background: var(--card);
     border: 1.5px solid var(--line);
     border-radius: 16px;
@@ -158,11 +158,21 @@
   .cell.sun .dow { color: var(--sun); }
   .cell.sat .dow { color: var(--sat); }
   .reps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
     font-family: "Jua", sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1;
   }
-  .reps small { font-family: "Gowun Dodum", sans-serif; font-size: 10px; color: var(--ink-soft); margin-left: 1px; }
+  .reps .r { display: flex; align-items: baseline; gap: 3px; white-space: nowrap; }
+  .reps em {
+    font-family: "Gowun Dodum", sans-serif;
+    font-style: normal;
+    font-size: 9.5px;
+    color: var(--ink-soft);
+  }
   .day-no { font-size: 9.5px; color: var(--ink-soft); }
 
   .stamp {
@@ -211,7 +221,7 @@
 
   @media (max-width: 360px) {
     .grid { gap: 6px; }
-    .reps { font-size: 16px; }
+    .reps { font-size: 14px; }
     .date { font-size: 11px; }
   }
 </style>
@@ -221,7 +231,7 @@
   <header>
     <div style="font-size:34px">🏋️‍♀️</div>
     <h1>100일 운동 도장판</h1>
-    <p class="sub">매일 하나씩 늘려가요 · 10개 → 109개</p>
+    <p class="sub">스쿼트·크런치는 매일 +1, 푸시업은 3일마다 +1</p>
     <div class="moves">
       <span class="chip">① 스쿼트</span>
       <span class="chip">② 푸시업</span>
@@ -251,6 +261,9 @@
   var START = new Date(2026, 9, 16); // 2026-10-16
   var DAYS = 100;
   var BASE = 10;
+  // 스쿼트·크런치는 매일 1개씩, 푸시업은 3일마다 1개씩 늘어남
+  function daily(i) { return BASE + i; }
+  function pushup(i) { return BASE + Math.floor(i / 3); }
   var KEY = 'workout100-stamps-20261016';
   var DOW = ['일', '월', '화', '수', '목', '금', '토'];
   var CHEERS = ['오늘도 해냈어요! 🎉', '멋져요 💪', '한 칸 더 가까워졌어요 ✨', '꾸준함이 최고예요 🌱', '수고했어요 ☕'];
@@ -301,10 +314,10 @@
       if (dw === 6) c.classList.add('sat');
       if (i === ti) c.classList.add('is-today');
       if (i > ti) c.classList.add('future');
-      c.setAttribute('aria-label', (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + DOW[dw] + '요일, 각 ' + (BASE + i) + '개');
+      c.setAttribute('aria-label', (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + DOW[dw] + '요일, 스쿼트·크런치 ' + daily(i) + '개, 푸시업 ' + pushup(i) + '개');
       c.innerHTML =
         '<span class="date">' + (d.getMonth() + 1) + '/' + d.getDate() + ' <span class="dow">' + DOW[dw] + '</span></span>' +
-        '<span class="reps">' + (BASE + i) + '<small>개</small></span>' +
+        '<span class="reps"><span class="r"><em>스·크</em>' + daily(i) + '</span><span class="r"><em>푸시업</em>' + pushup(i) + '</span></span>' +
         '<span class="day-no">DAY ' + (i + 1) + '</span>' +
         '<span class="stamp"></span>';
       c.addEventListener('click', toggle.bind(null, i));
@@ -342,13 +355,13 @@
       box.innerHTML = '<div class="today-info"><div class="today-label">100일 챌린지 완료</div><div class="today-count">⭐ ' + n + '개 <small>도장</small></div><div class="today-list">정말 수고 많았어요!</div></div>';
       return;
     }
-    var reps = BASE + ti;
+    var reps = daily(ti), push = pushup(ti);
     var done = has(ti);
     box.innerHTML =
       '<div class="today-info">' +
         '<div class="today-label">오늘은 DAY ' + (ti + 1) + '</div>' +
-        '<div class="today-count">각 ' + reps + '개</div>' +
-        '<div class="today-list">스쿼트 ' + reps + ' · 푸시업 ' + reps + ' · 크런치 ' + reps + '</div>' +
+        '<div class="today-count"><small>스쿼트·크런치</small> ' + reps + ' <small>푸시업</small> ' + push + '</div>' +
+        '<div class="today-list">' + (ti % 3 === 2 ? '내일부터 푸시업 +1 💪' : '푸시업은 ' + (3 - ti % 3) + '일 뒤에 +1') + '</div>' +
       '</div>' +
       '<button type="button" class="today-btn' + (done ? ' done' : '') + '" id="todayBtn" aria-label="오늘 도장 찍기">' +
         (done ? STAR : '도장<br>쾅!') +
